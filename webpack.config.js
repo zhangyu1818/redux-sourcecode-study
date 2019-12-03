@@ -1,6 +1,4 @@
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-// const Webpack = require("webpack");
 
 module.exports = {
   mode: "development",
@@ -11,20 +9,10 @@ module.exports = {
         test: /\.ts$/,
         exclude: /node_modules/,
         loader: "babel-loader"
-      },
-      {
-        test: /\.scss$/,
-        use: ["style-loader", "css-loader", "sass-loader"]
       }
     ]
   },
-  plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: "./src/index.html"
-    })
-    // new Webpack.HotModuleReplacementPlugin()
-  ],
+  plugins: [new HtmlWebpackPlugin()],
   devtool: "source-map",
   resolve: {
     extensions: [".ts", ".js"]

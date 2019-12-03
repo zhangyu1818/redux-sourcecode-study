@@ -2,16 +2,22 @@ import {
   createStore,
   applyMiddleware,
   combineReducers,
+  bindActionCreators,
   Reducer
 } from "./redux";
-import { logger } from "redux-logger";
+// middleware
+import logger from "redux-logger";
+import { composeWithDevTools } from "redux-devtools-extension";
 
-type CountActionType = { type: "INCREASE_NUMBER" } | { type: "MINUS_NUMBER" };
-
+// count initial value
 const countInitialValue = {
   count: 0
 };
 
+// count action types
+type CountActionType = { type: "INCREASE_NUMBER" } | { type: "MINUS_NUMBER" };
+
+// count reducer
 const countReducer: Reducer<typeof countInitialValue, CountActionType> = (
   state = countInitialValue,
   action
@@ -26,14 +32,17 @@ const countReducer: Reducer<typeof countInitialValue, CountActionType> = (
   }
 };
 
-type NameActionType =
-  | { type: "SET_NAME"; name: string }
-  | { type: "CLEAR_NAME" };
-
+// name initial value
 const nameInitialValue = {
   name: ""
 };
 
+// name action types
+type NameActionType =
+  | { type: "SET_NAME"; name: string }
+  | { type: "CLEAR_NAME" };
+
+// name reducer
 const nameReducer: Reducer<typeof nameInitialValue, NameActionType> = (
   state = nameInitialValue,
   action
@@ -48,25 +57,51 @@ const nameReducer: Reducer<typeof nameInitialValue, NameActionType> = (
   }
 };
 
+// root state type
 type rootState = {
   count: typeof countInitialValue;
   name: typeof nameInitialValue;
 };
 
-const reducer = {
+// combine reducers
+const reducers = combineReducers<rootState>({
   count: countReducer,
   name: nameReducer
-};
+});
 
-const reducers = combineReducers<rootState>(reducer);
+// store
+const store = createStore(
+  reducers,
+  // @ts-ignore todo 正确类型
+  composeWithDevTools(applyMiddleware(logger))
+);
 
-const store = createStore(reducers, applyMiddleware(logger as any));
+// subscribe
 const unsubscribeHandle = store.subscribe(() => console.log(store.getState()));
+
+// unsubscribe
+// unsubscribeHandle()
 
 // 如果action的prototype是null，会报错
 // const nullPrototype = Object.create(null);
 // nullPrototype.type = "INCREASE_NUMBER";
 // store.dispatch(nullPrototype);
 
+// action creators
+const minusNumberAction = () => ({
+  type: "MINUS_NUMBER"
+});
+
+const setNameAction = (name: string) => ({ type: "SET_NAME", name });
+
 store.dispatch({ type: "INCREASE_NUMBER" });
-store.dispatch({ type: "SET_NAME", name: "hello" });
+store.dispatch(setNameAction("hello"));
+
+// bind action creators
+const actionCreators = bindActionCreators(
+  { minusNumberAction, setNameAction },
+  store.dispatch
+);
+
+actionCreators.minusNumberAction();
+actionCreators.setNameAction("hello redux");
