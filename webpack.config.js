@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   mode: "development",
   entry: "./src/index.ts",
-  // entry: "./src/study.ts",
   module: {
     rules: [
       {
@@ -20,6 +19,5 @@ module.exports = {
   },
   devServer: {
     open: true
-    // hot: true
   }
 };
