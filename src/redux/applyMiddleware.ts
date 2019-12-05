@@ -9,13 +9,22 @@ import { Reducer } from "./types/reducers";
  * of the Redux store. This is handy for a variety of tasks, such as expressing
  * asynchronous actions in a concise manner, or logging every action payload.
  *
+ * 创建一个store增强器，应用中间件到redux store 中到dispatch方法
+ * 这对各种任务都很方便，如用简单都方式表达异步action，或者在打印每次action的载体
+ *
  * See `redux-thunk` package as an example of the Redux middleware.
+ *
+ * redux-thunk 包就是redux中间件的一个例子
  *
  * Because middleware is potentially asynchronous, this should be the first
  * store enhancer in the composition chain.
  *
+ * 因为中间件是潜在的异步，所以它应该在调用链的第一个store增强器
+ *
  * Note that each middleware will be given the `dispatch` and `getState` functions
  * as named arguments.
+ *
+ * 每个中间件都会给dispatch和getState函数作为命名参数
  *
  * @param middlewares The middleware chain to be applied.
  * @returns A store enhancer applying the middleware.
@@ -73,7 +82,6 @@ export default function applyMiddleware(
     };
     const chain = middlewares.map(middleware => middleware(middlewareAPI));
     dispatch = compose<typeof dispatch>(...chain)(store.dispatch);
-
     return {
       ...store,
       dispatch

@@ -10,6 +10,7 @@ function bindActionCreator<A extends AnyAction = AnyAction>(
   dispatch: Dispatch
 ) {
   return function(this: any, ...args: any[]) {
+    // todo 为啥要用apply
     return dispatch(actionCreator.apply(this, args));
   };
 }
@@ -20,12 +21,18 @@ function bindActionCreator<A extends AnyAction = AnyAction>(
  * may be invoked directly. This is just a convenience method, as you can call
  * `store.dispatch(MyActionCreators.doSomething())` yourself just fine.
  *
+ * 将一个值是action creators的对象转为另一个有相同的键名
+ * 但是每一个action creator函数都包含在dispatch里，所以你可以直接调用它们
+ * 这只是一个简便方法，你也可以像`store.dispatch(MyActionCreators.doSomething())`一样调用
+ *
  * For convenience, you can also pass an action creator as the first argument,
  * and get a dispatch wrapped function in return.
  *
  * @param actionCreators An object whose values are action
  * creator functions. One handy way to obtain it is to use ES6 `import * as`
  * syntax. You may also pass a single function.
+ *
+ * 一个值是action creator函数的对象，或者一个action creator函数
  *
  * @param dispatch The `dispatch` function available on your Redux
  * store.
@@ -40,6 +47,7 @@ export default function bindActionCreators<A, C extends ActionCreator<A>>(
   dispatch: Dispatch
 ): C;
 
+// todo 这个定义有啥用
 export default function bindActionCreators<
   A extends ActionCreator<any>,
   B extends ActionCreator<any>
@@ -58,10 +66,12 @@ export default function bindActionCreators(
   actionCreators: ActionCreator<any> | ActionCreatorsMapObject,
   dispatch: Dispatch
 ) {
+  // 只有一个函数的情况
   if (typeof actionCreators === "function") {
     return bindActionCreator(actionCreators, dispatch);
   }
 
+  // 没传参报错
   if (typeof actionCreators !== "object" || actionCreators === null) {
     throw new Error(
       `bindActionCreators expected an object or a function, instead received ${
@@ -71,6 +81,7 @@ export default function bindActionCreators(
     );
   }
 
+  // 循环绑定
   const boundActionCreators: ActionCreatorsMapObject = {};
   for (const key in actionCreators) {
     const actionCreator = actionCreators[key];

@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@types/redux-logger": "^3.0.7",
-    "redux": "^4.0.4",
     "redux-logger": "^3.0.6"
   }
 }

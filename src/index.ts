@@ -3,8 +3,10 @@ import {
   applyMiddleware,
   combineReducers,
   bindActionCreators,
-  Reducer
+  Reducer,
+  Middleware
 } from "./redux";
+
 // middleware
 import logger from "redux-logger";
 import { composeWithDevTools } from "redux-devtools-extension";
@@ -69,11 +71,15 @@ const reducers = combineReducers<rootState>({
   name: nameReducer
 });
 
+// custom middleware
+const doNothingMiddleware: Middleware = middlewareApi => next => action =>
+  next(action);
+
 // store
 const store = createStore(
   reducers,
   // @ts-ignore todo 正确类型
-  composeWithDevTools(applyMiddleware(logger))
+  composeWithDevTools(applyMiddleware(doNothingMiddleware, logger))
 );
 
 // subscribe
