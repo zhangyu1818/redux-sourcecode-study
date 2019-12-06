@@ -24,6 +24,9 @@ export interface MiddlewareAPI<D extends Dispatch = Dispatch, S = any> {
  * @template S The type of the state supported by this middleware.
  * @template D The type of Dispatch of the store where this middleware is
  *   installed.
+ *
+ *   中间件函数首先会接收dispatch和getStore方法，然后返回一个新的函数
+ *   这时候新的函数是能够使用dispatch和个体Store函数的，这个函数才是真正的中间件处理函数
  */
 export interface Middleware<
   _DispatchExt = {}, // TODO: remove unused component (breaking change)

@@ -280,7 +280,8 @@ export default function createStore<
       const listener = listeners[i];
       listener();
     }
-    // todo 为啥返回 action?
+    // 在中间件的处理中，如果调用了next(action)，这个函数的返回值就是这里返回的action
+    // todo 中间件中本来就可以拿到action，这里返回action有何意义？
     return action;
   }
 

@@ -61,6 +61,16 @@ export default function applyMiddleware<Ext1, Ext2, Ext3, Ext4, Ext5, S>(
 export default function applyMiddleware<Ext, S = any>(
   ...middlewares: Middleware<any, S, any>[]
 ): StoreEnhancer<{ dispatch: Ext }>;
+/**
+ * applyMiddleware函数接收middleware为参数
+ * 返回另一个函数，这个函数需要接收createStore为函数，这个处理是在createStore中进行的
+ *
+ * 这里是使用接收当createStore函数，把store创建出来
+ * 然后把dispatch和getStore传给中间件函数
+ * 使用compose把已经有dispatch和getStore方法当中间件组合后，将dispatch传入，得到一个新的dispatch
+ * 新的dispatch是经过了中间件的dispatch
+ *
+ */
 export default function applyMiddleware(
   ...middlewares: Middleware[]
 ): StoreEnhancer<any> {
@@ -69,6 +79,8 @@ export default function applyMiddleware(
     ...args: any[]
   ) => {
     const store = createStore(reducer, ...args);
+    // 这里做一个错误处理
+    // 如果在绑定中间件的时候调用dispatch会报错
     let dispatch: Dispatch = () => {
       throw new Error(
         "Dispatching while constructing your middleware is not allowed. " +
@@ -80,8 +92,11 @@ export default function applyMiddleware(
       getState: store.getState,
       dispatch: (action, ...args) => dispatch(action, ...args)
     };
+    // 将dispatch和getStore方法传入中间件，得到新的数组
     const chain = middlewares.map(middleware => middleware(middlewareAPI));
+    // 将新的数组用compose绑定起来，再把store.dispatch传入，得到新的dispatch
     dispatch = compose<typeof dispatch>(...chain)(store.dispatch);
+    // 返回新的dispatch，这个dispatch会触发中间件
     return {
       ...store,
       dispatch
