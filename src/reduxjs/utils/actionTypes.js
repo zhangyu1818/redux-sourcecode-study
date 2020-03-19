@@ -8,21 +8,17 @@
  * Do not reference these action types directly in your code.
  * 不要在你的代码中引用这些类型
  */
-
-const randomString = () =>
-  Math.random()
+const randomString = () => Math.random()
     .toString(36)
     .substring(7)
     .split("")
     .join(".");
-
 const ActionTypes = {
-  // 初始化action
-  INIT: `@@redux/INIT${/* #__PURE__ */ randomString()}`,
-  // 替换action
-  REPLACE: `@@redux/REPLACE${/* #__PURE__ */ randomString()}`,
-  // 测试未知类型的action
-  PROBE_UNKNOWN_ACTION: () => `@@redux/PROBE_UNKNOWN_ACTION${randomString()}`
+    // 初始化action
+    INIT: `@@redux/INIT${ /* #__PURE__ */randomString()}`,
+    // 替换action
+    REPLACE: `@@redux/REPLACE${ /* #__PURE__ */randomString()}`,
+    // 测试未知类型的action
+    PROBE_UNKNOWN_ACTION: () => `@@redux/PROBE_UNKNOWN_ACTION${randomString()}`
 };
-
 export default ActionTypes;

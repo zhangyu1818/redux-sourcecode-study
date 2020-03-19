@@ -4,7 +4,7 @@
  * whether from UI events, network callbacks, or other sources such as
  * WebSockets needs to eventually be dispatched as actions.
  *
- * 一个action是一个简单的对象，意思是代表改变state
+ * 一个action是一个字面量对象，意思是代表改变state
  * actions是将值放入store的唯一方法
  * 任何数据，无论是来自ui events，network callbacks，或者是其他来源像是 WebSockets
  * 都需要dispatch一个action
@@ -35,6 +35,10 @@ export interface Action<T = any> {
  * This is mainly for the use of the `Reducer` type.
  * This is not part of `Action` itself to prevent types that extend `Action` from
  * having an index signature.
+ *
+ * 接受任何属性action的类型
+ * 主要用于reducer的类型
+ *
  */
 export interface AnyAction extends Action {
   // Allows any extra properties to be defined in an action.
@@ -74,7 +78,7 @@ export interface AnyAction extends Action {
  * async action instead of an action.
  *
  * 如果一个action creator需要读取当前的state，执行一个api调用或者是其他副作用
- * 像是路由过渡，它需要返回异步action而不是一个action
+ * 比如路由过渡，它需要返回异步action而不是一个action
  *
  * @template A Returned action type.
  */
@@ -84,7 +88,6 @@ export interface ActionCreator<A> {
 
 /**
  * Object whose values are action creator functions.
- * 一个值是action creator的对象
  */
 export interface ActionCreatorsMapObject<A = any> {
   [key: string]: ActionCreator<A>;

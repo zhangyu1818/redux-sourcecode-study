@@ -1,5 +1,4 @@
 import { Dispatch } from "./store";
-import { AnyAction } from "./actions";
 
 export interface MiddlewareAPI<D extends Dispatch = Dispatch, S = any> {
   dispatch: D;
@@ -18,7 +17,7 @@ export interface MiddlewareAPI<D extends Dispatch = Dispatch, S = any> {
  * logging actions, performing side effects like routing, or turning an
  * asynchronous API call into a series of synchronous actions.
  *
- * 中间件是通过函数组合的，它在进行action的log，执行副作用像是路由，或者将一个异步调用的api转为同步action
+ * 中间件是通过函数组合的，它用于进行action的log，执行副作用像是路由，或者将一个异步调用的api转为同步action
  *
  * @template DispatchExt Extra Dispatch signature added by this middleware.
  * @template S The type of the state supported by this middleware.
@@ -34,6 +33,6 @@ export interface Middleware<
   D extends Dispatch = Dispatch
 > {
   (api: MiddlewareAPI<D, S>): (
-    next: Dispatch<AnyAction>
-  ) => (action: any) => any;
+    next: D
+  ) => (action: D extends Dispatch<infer A> ? A : never) => any;
 }

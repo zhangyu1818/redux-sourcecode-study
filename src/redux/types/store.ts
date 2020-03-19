@@ -41,7 +41,7 @@ declare const $CombinedState: unique symbol;
  */
   // combineReducers创建出的state的类型
   // typescript是鸭子类型，所以需需要一个不同的标识符去区别类型
-  // todo 不太懂
+
 export type CombinedState<S> = { readonly [$CombinedState]?: undefined } & S;
 
 /**
@@ -49,7 +49,7 @@ export type CombinedState<S> = { readonly [$CombinedState]?: undefined } & S;
  * objects_ (i.e. the generated higher level object with keys mapping to
  * individual reducers) are partial.
  */
-  // todo 有点懵逼
+
 export type PreloadedState<S> = Required<S> extends {
   [$CombinedState]: undefined;
 }
@@ -66,20 +66,29 @@ export type PreloadedState<S> = Required<S> extends {
  * A *dispatching function* (or simply *dispatch function*) is a function that
  * accepts an action or an async action; it then may or may not dispatch one
  * or more actions to the store.
+ *
  * 一个dispatch函数接收一个action或者async action参数，它可以dispatch一个或者多个到action去改变store
+ *
  * We must distinguish between dispatching functions in general and the base
  * `dispatch` function provided by the store instance without any middleware.
+ *
  * 在没有中间件到情况下，基本的dispatch函数由store提供
+ *
  * The base dispatch function *always* synchronously sends an action to the
  * store's reducer, along with the previous state returned by the store, to
  * calculate a new state. It expects actions to be plain objects ready to be
  * consumed by the reducer.
+ *
  * 基本的dispatch函数总是会同步的发送一个action给reducer处理
+ *
  * Middleware wraps the base dispatch function. It allows the dispatch
  * function to handle async actions in addition to actions. Middleware may
  * transform, delay, ignore, or otherwise interpret actions or async actions
  * before passing them to the next middleware.
+ *
  * 中间件包含一个基本的dispatch函数，它允许dispatch调用一个异步的action
+ * 中间件可能会在下一个中间件之前做转换，等待，忽略或者异步action
+ *
  * @template A The type of things (actions or otherwise) which may be
  *   dispatched.
  */
@@ -125,8 +134,7 @@ export type Observer<T> = {
  * A store is an object that holds the application's state tree.
  * There should only be a single store in a Redux app, as the composition
  * happens on the reducer level.
- * store是一个object来维持应用状态树
- * 一个redux app里只能有一个store，因为状态的改变是发生在reducer层
+ *
  * @template S The type of state held by this store.
  * @template A the type of actions which may be dispatched by this store.
  * @template StateExt any extension to state from store enhancers
@@ -140,34 +148,29 @@ export interface Store<
 > {
   /**
    * Dispatches an action. It is the only way to trigger a state change.
-   * dispatch一个action是改变state的唯一方式
+   *
    * The `reducer` function, used to create the store, will be called with the
    * current state tree and the given `action`. Its return value will be
    * considered the **next** state of the tree, and the change listeners will
    * be notified.
-   * reducer函数用来创建store，在传入action后会被调用，它返回下一次state
-   * 并且listeners会被通知调用
+   *
    * The base implementation only supports plain object actions. If you want
    * to dispatch a Promise, an Observable, a thunk, or something else, you
    * need to wrap your store creating function into the corresponding
    * middleware. For example, see the documentation for the `redux-thunk`
    * package. Even the middleware will eventually dispatch plain object
    * actions using this method.
-   * 基础的实现只支持一个普通对象的action，如果想要dispatch一个Promise、Observable、thunk或者其他的
-   * 就需要使用相应的中间件来创建store
+   *
    * @param action A plain object representing “what changed”. It is a good
    *   idea to keep actions serializable so you can record and replay user
    *   sessions, or use the time travelling `redux-devtools`. An action must
    *   have a `type` property which may not be `undefined`. It is a good idea
    *   to use string constants for action types.
-   * action是一个普通的对象代表"什么改变了"，这是个非常好的方法来序列化action
-   * 所以你可以记录和重播用户的操作，比如使用redux-devtools进行时间旅行
-   * 一个action必须有一个type属性，不能为undefined，用string来标识action type非常好
+   *
    * @returns For convenience, the same action object you dispatched.
-   * 返回派发的action
+   *
    * Note that, if you use a custom middleware, it may wrap `dispatch()` to
    * return something else (for example, a Promise you can await).
-   * 如果你使用自定义的中间件，你需要封装dispatch函数并返回其他的东西
    */
   dispatch: Dispatch<A>;
 
@@ -175,7 +178,6 @@ export interface Store<
    * Reads the state tree managed by the store.
    *
    * @returns The current state tree of your application.
-   * 获取当前的state
    */
   getState(): S;
 
@@ -184,8 +186,7 @@ export interface Store<
    * dispatched, and some part of the state tree may potentially have changed.
    * You may then call `getState()` to read the current state tree inside the
    * callback.
-   * 添加一个改变的监听listener，它会在action被dispatch后，一部分state被隐式的改变后调用
-   * 然后可以调用getState来获取state
+   *
    * You may call `dispatch()` from a change listener, with the following
    * caveats:
    *
@@ -194,9 +195,7 @@ export interface Store<
    * this will not have any effect on the `dispatch()` that is currently in
    * progress. However, the next `dispatch()` call, whether nested or not,
    * will use a more recent snapshot of the subscription list.
-   * subscriptions只是调用dispatch之前的快照，
-   * 如果你在listeners被调用的过程中给你退订或者订阅，对正在进行的dispatch是没有影响的
-   * 但是在下次dispatch调用的时候，subscription总是会使用最新的快照
+   *
    * 2. The listener should not expect to see all states changes, as the state
    * might have been updated multiple times during a nested `dispatch()` before
    * the listener is called. It is, however, guaranteed that all subscribers
@@ -210,7 +209,7 @@ export interface Store<
 
   /**
    * Replaces the reducer currently used by the store to calculate the state.
-   * 替换reducers
+   *
    * You might need this if your app implements code splitting and you want to
    * load some of the reducers dynamically. You might also need this if you
    * implement a hot reloading mechanism for Redux.
@@ -235,7 +234,7 @@ export interface Store<
  * dispatching function, we must distinguish the base store creator,
  * `createStore(reducer, preloadedState)` exported from the Redux package, from
  * store creators that are returned from the store enhancers.
- * store creator是当有store增强器的时候创建redux store的函数
+ *
  * @template S The type of state to be held by the store.
  * @template A The type of actions which may be dispatched.
  * @template Ext Store extension that is mixed in to the Store type.
@@ -276,7 +275,9 @@ export interface StoreCreator {
  * provided by the developer tools. It is what makes time travel possible
  * without the app being aware it is happening. Amusingly, the Redux
  * middleware implementation is itself a store enhancer.
+ *
  * 也许你永远也不会写一个store enhancer
+ *
  * @template Ext Store extension that is mixed into the Store type.
  * @template StateExt State extension that is mixed into the state type.
  */

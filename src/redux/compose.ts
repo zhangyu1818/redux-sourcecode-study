@@ -60,6 +60,7 @@ export default function compose<R>(...funcs: Function[]): (...args: any[]) => R;
 export default function compose(...funcs: Function[]) {
   if (funcs.length === 0) {
     // infer the argument type so it is usable in inference down the line
+    // 推断参数类型
     return <T>(arg: T) => arg;
   }
 
@@ -69,4 +70,3 @@ export default function compose(...funcs: Function[]) {
 
   return funcs.reduce((a, b) => (...args: any) => a(b(...args)));
 }
-

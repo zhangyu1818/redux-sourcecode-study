@@ -39,7 +39,6 @@ import { Action, AnyAction } from "./actions";
  * 不要把API调用放进reducers里
  *
  * @template S The type of state consumed and produced by this reducer.
- *
  * @template A The type of actions the reducer can potentially respond to.
  */
 export type Reducer<S = any, A extends Action = AnyAction> = (
@@ -49,7 +48,7 @@ export type Reducer<S = any, A extends Action = AnyAction> = (
 
 /**
  * Object whose values correspond to different reducer functions.
- * 键对应不同的reducer函数的对象，用在combineReducers时候的传入的reducers的类型
+ *
  * @template A The type of actions the reducers can potentially respond to.
  */
 export type ReducersMapObject<S = any, A extends Action = Action> = {

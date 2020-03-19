@@ -8,6 +8,7 @@ import warning from "./utils/warning";
 import __DO_NOT_USE__ActionTypes from "./utils/actionTypes";
 
 // types
+// store的type
 // store
 export {
   CombinedState,
@@ -23,6 +24,7 @@ export {
   ExtendState
 } from "./types/store";
 // reducers
+// reducers的type
 export {
   Reducer,
   ReducerFromReducersMapObject,
@@ -32,15 +34,19 @@ export {
   ActionFromReducersMapObject
 } from "./types/reducers";
 // action creators
+// action的type
 export { ActionCreator, ActionCreatorsMapObject } from "./types/actions";
 // middleware
+// middleware的type
 export { MiddlewareAPI, Middleware } from "./types/middleware";
 // actions
+// actions的type
 export { Action, AnyAction } from "./types/actions";
 
 /*
  * This is a dummy function to check if the function name has been altered by minification.
  * If the function has been minified and NODE_ENV !== 'production', warn the user.
+ * 根据这个函数的名字有没有被压缩来判断是否在开发环境中使用来压缩版本
  */
 function isCrushed() {}
 

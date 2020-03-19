@@ -75,23 +75,28 @@ const reducers = combineReducers<rootState>({
 const doNothingMiddleware: Middleware = middlewareApi => next => action =>
   next(action);
 
+const asyncMiddleware: Middleware = middlewareApi => next => action =>
+  Promise.resolve(next(action));
+
 // store
 const store = createStore(
   reducers,
-  // @ts-ignore todo 正确类型
-  composeWithDevTools(applyMiddleware(doNothingMiddleware, logger))
+  composeWithDevTools(
+    // @ts-ignore todo 正确类型
+    applyMiddleware(doNothingMiddleware, asyncMiddleware, logger)
+  )
 );
 
 // subscribe
-const unsubscribeHandle = store.subscribe(() => console.log(store.getState()));
+// const unsubscribeHandle = store.subscribe(() => console.log(store.getState()));
 
 // unsubscribe
 // unsubscribeHandle()
 
 // 如果action的prototype是null，会报错
-// const nullPrototype = Object.create(null);
-// nullPrototype.type = "INCREASE_NUMBER";
-// store.dispatch(nullPrototype);
+const nullPrototype = Object.create(null);
+nullPrototype.type = "INCREASE_NUMBER";
+store.dispatch(nullPrototype);
 
 // action creators
 const minusNumberAction = () => ({
@@ -102,6 +107,11 @@ const setNameAction = (name: string) => ({ type: "SET_NAME", name });
 
 store.dispatch({ type: "INCREASE_NUMBER" });
 store.dispatch(setNameAction("hello"));
+// 使用asyncMiddleware后dispatch返回一个Promise
+// @ts-ignore
+store.dispatch(setNameAction("hello")).then(action => {
+  console.log("Promise resolve action", action);
+});
 
 // bind action creators
 const actionCreators = bindActionCreators(
@@ -111,3 +121,10 @@ const actionCreators = bindActionCreators(
 
 actionCreators.minusNumberAction();
 actionCreators.setNameAction("hello redux");
+
+// setTimeout(() => {
+//   // @ts-ignore
+//   store.getState().name = "直接修改";
+//   // 这不是直接修改了
+//   console.log(store.getState());
+// }, 1000);

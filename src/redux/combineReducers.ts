@@ -30,13 +30,13 @@ function getUnexpectedStateShapeWarningMessage(
   unexpectedKeyCache: { [key: string]: true }
 ) {
   const reducerKeys = Object.keys(reducers);
-  // 当前的state是哪里来的
+  // 判断当前的state是初始化的还是上一次的
   const argumentName =
     action && action.type === ActionTypes.INIT
       ? "preloadedState argument passed to createStore"
       : "previous state received by the reducer";
 
-  // todo 为什么不在[assertReducerShape]函数判断reducerObject是不是空的？
+  // 如果reducer对象是空的
   if (reducerKeys.length === 0) {
     return (
       "Store does not have a valid reducer. Make sure the argument passed " +
@@ -45,7 +45,6 @@ function getUnexpectedStateShapeWarningMessage(
   }
 
   // 判断是不是字面量对象
-  // 如果传入了preloadedState不是字面量，会报错
   if (!isPlainObject(inputState)) {
     const match = Object.prototype.toString
       .call(inputState)
@@ -58,6 +57,7 @@ function getUnexpectedStateShapeWarningMessage(
       `keys: "${reducerKeys.join('", "')}"`
     );
   }
+
   const unexpectedKeys = Object.keys(inputState).filter(
     key => !reducers.hasOwnProperty(key) && !unexpectedKeyCache[key]
   );
@@ -66,6 +66,7 @@ function getUnexpectedStateShapeWarningMessage(
     unexpectedKeyCache[key] = true;
   });
 
+  // 在replace reducers的时候可能会出现key和state对应不上的情况，所以return
   if (action && action.type === ActionTypes.REPLACE) return;
 
   if (unexpectedKeys.length > 0) {
@@ -129,8 +130,8 @@ function assertReducerShape(reducers: ReducersMapObject) {
  * into a single state object, whose keys correspond to the keys of the passed
  * reducer functions.
  *
- * 将一个值是不同reducer函数的对象转为单个reducer函数
- * 它会调用每个子reducer，并且把值聚集到一个state对象里，这个对象的键对应reducer函数的键
+ * 将值是不同reducer函数的对象转换为一个reducer函数，它会调用每个reducer，并且将它们返回
+ * 的结果放入一个state对象，这个对象的key和传入的reducer函数对象的key是对应的
  *
  * @template S Combined state object type.
  *
@@ -141,12 +142,15 @@ function assertReducerShape(reducers: ReducersMapObject) {
  *   initial state if the state passed to them was undefined, and the current
  *   state for any unrecognized action.
  *
- *  将一个值对应不同的reducer函数的对象，将它合并成一个reducers
- *  reducers永远不会的对任何action返回undefined
- *  它会返回初始state如果state是undefined，对于无法识别的action会返回当前的state
+ *   参数 reducers 一个需要组合为一个的值对应不同reducer函数的对象，一种方便的方法是使用
+ *   ES6的import * as reducers语法，reducers在传入任何action的情况下都不应该返回undefined
+ *   相反，如果传给它们的state是undefined，它们需要返回它们的初始state，对于任何无法识别的
+ *   action都应该返回它们当前的state
  *
  * @returns A reducer function that invokes every reducer inside the passed
  *   object, and builds a state object with the same shape.
+ *
+ *   返回值 一个reducer函数，它会调用传入对象的每个reducer函数，并且创建一个有相同key结构的state对象
  */
 export default function combineReducers<S>(
   reducers: ReducersMapObject<S, any>
@@ -161,30 +165,34 @@ export default function combineReducers<M extends ReducersMapObject<any, any>>(
   ActionFromReducersMapObject<M>
 >;
 export default function combineReducers(reducers: ReducersMapObject) {
-  // 先获取reducers对象的键名
+  // 获取传入的reducers对象的keys
   const reducerKeys = Object.keys(reducers);
+  // 实际使用的reducers对象
   const finalReducers: ReducersMapObject = {};
   for (let i = 0; i < reducerKeys.length; i++) {
-    // 当前键名
     const key = reducerKeys[i];
 
     if (process.env.NODE_ENV !== "production") {
+      // 判断每个key有没有对应的值
       if (typeof reducers[key] === "undefined") {
         warning(`No reducer provided for key "${key}"`);
       }
     }
 
-    // 浅拷贝一次reducers对象
-    // 防止修改了reducers后引用也改变了
+    // 会清除掉无关紧要的不是undefined，也不是函数的值
+
+    // key对应的值需要是reducer函数
     if (typeof reducers[key] === "function") {
+      // 做一层浅拷贝
       finalReducers[key] = reducers[key];
     }
   }
+  // 获取reducers的key
   const finalReducerKeys = Object.keys(finalReducers);
 
   // This is used to make sure we don't warn about the same
   // keys multiple times.
-  // 用来记录重复的键，确保不会重复输出相同的键名的提醒
+  // 确保不会对相同的key发出多次警告
   let unexpectedKeyCache: { [key: string]: true };
   if (process.env.NODE_ENV !== "production") {
     unexpectedKeyCache = {};
@@ -197,18 +205,20 @@ export default function combineReducers(reducers: ReducersMapObject) {
   } catch (e) {
     shapeAssertionError = e;
   }
+
+  // 返回的合并为一个的reducer函数
   return function combination(
     state: StateFromReducersMapObject<typeof reducers> = {},
     action: AnyAction
   ) {
     // 如果reducer不符合要求，抛出异常
-    // todo 为什么要在下面抛出异常？
+    // 上面不写try catch就抛出了，在下面抛出的意义难道是调用时才报错？
     if (shapeAssertionError) {
       throw shapeAssertionError;
     }
 
-    // 如果state的键和reducers的键对不上，会报错
     if (process.env.NODE_ENV !== "production") {
+      // 检查state
       const warningMessage = getUnexpectedStateShapeWarningMessage(
         state,
         finalReducers,
@@ -219,28 +229,33 @@ export default function combineReducers(reducers: ReducersMapObject) {
         warning(warningMessage);
       }
     }
-    // 标识state是否改变，改变了就返回新的state，否则返回传入的state
+
+    // 标示state有没有改变
     let hasChanged = false;
+    // 经过reducer处理的下一次state
     const nextState: StateFromReducersMapObject<typeof reducers> = {};
+    // 循环调用每一个reducer函数
     for (let i = 0; i < finalReducerKeys.length; i++) {
+      // 当前reducer的key
       const key = finalReducerKeys[i];
-      // 当前key对应的reducer函数
+      // 当前reducer的函数
       const reducer = finalReducers[key];
-      // 上一次state对应的key的值
+      // 当前key对应的state的值
       const previousStateForKey = state[key];
-      // 用reducer函数和action得到下一次state的值
+      // 经过reducer函数后的下一此state值
       const nextStateForKey = reducer(previousStateForKey, action);
-      // 当前key对应的state通过reducer后是undefined的时候报错
+      // reducer不能返回undefined
       if (typeof nextStateForKey === "undefined") {
         const errorMessage = getUndefinedStateErrorMessage(key, action);
         throw new Error(errorMessage);
       }
-      // 把值赋给nextState
+      // 当前key的值赋值给state对象
       nextState[key] = nextStateForKey;
-      // nextStateForKey和previousStateForKey的值正常应该不想等
-      // 所以hasChanged = true
+      // 如果当前key的state和上一次的state不同，说明state就已经改变了
       hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
     }
+    // 如果replace了reducers，可能会需要判断key的length
+    // https://github.com/reduxjs/redux/issues/3488
     hasChanged =
       hasChanged || finalReducerKeys.length !== Object.keys(state).length;
     return hasChanged ? nextState : state;
